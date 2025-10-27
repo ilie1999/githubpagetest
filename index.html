@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- CRÍTICO para celulares: asegura que la página se vea correctamente -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor Vertical 9:16</title>
+    <!-- Cargamos Tailwind CSS para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Usamos la fuente Inter, que carga Tailwind por defecto */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Evita el "rebote" en móviles */
+            overscroll-behavior: none;
+        }
+        /* Oculta las barras de scroll si aparecen */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-black h-screen w-screen flex items-center justify-center overflow-hidden">
+
+    <!--
+      Contenedor del Video (Wrapper)
+      - En móviles (pantallas < 640px): Ocupa toda la pantalla (w-full h-full).
+      - En pantallas más grandes (sm:):
+        - Se limita al 90% de la altura de la ventana (sm:h-[90vh]).
+        - Mantiene la proporción 9:16 (sm:aspect-[9/16]).
+        - Se redondea y sombrea para un look de "teléfono" (sm:rounded-2xl sm:shadow-2xl).
+    -->
+    <div id="videoContainer" class="relative bg-gray-900 w-full h-full sm:h-[90vh] sm:w-auto sm:aspect-[9/16] sm:rounded-2xl sm:shadow-2xl overflow-hidden">
+
+        <!-- El elemento de Video -->
+        <video id="videoPlayer"
+               class="w-full h-full object-cover"
+               src="$text{C}_2text{H}_6text{O}$.mp4" <!-- ¡CAMBIA ESTO SI TU ARCHIVO SE LLAMA DIFERENTE! -->
+               playsinline  <!-- Esencial para iOS: reproduce en la página, no a pantalla completa -->
+               autoplay     <!-- Intenta autocomenzar (requiere 'muted') -->
+               muted        <!-- Requerido para que autoplay funcione en navegadores modernos -->
+               loop>        <!-- Repite el video al terminar -->
+
+            <!-- Mensaje si el video no carga o el navegador no es compatible -->
+            <p class="text-white p-4 absolute inset-0 flex items-center justify-center text-center">
+                Tu navegador no soporta el tag de video.<br>
+                Asegúrate de que el archivo "C2H6O.mp4" esté en la misma carpeta que este HTML.
+            </p>
+        </video>
+
+        <!--
+          Overlay para control de Play/Pause
+          - Se muestra cuando el video está pausado.
+          - Se oculta con una transición suave cuando se reproduce.
+        -->
+        <div id="videoOverlay" class="absolute inset-0 flex items-center justify-center cursor-pointer transition-opacity duration-300">
+            <!-- Icono de Play (SVG en línea) -->
+            <div id="playIcon" class="w-20 h-20 text-white/70 backdrop-blur-sm bg-black/30 rounded-full flex items-center justify-center opacity-0 transition-opacity duration-300">
+                <svg class="w-12 h-12 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Obtenemos los elementos del DOM
+        const video = document.getElementById('videoPlayer');
+        const overlay = document.getElementById('videoOverlay');
+        const playIcon = document.getElementById('playIcon');
+
+        // Función para alternar entre play y pause
+        function togglePlayPause() {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+
+        // Función para actualizar la UI (mostrar/ocultar icono de play)
+        function updateUI() {
+            if (video.paused) {
+                // Si está pausado, muestra el icono
+                playIcon.classList.remove('opacity-0');
+            } else {
+                // Si está reproduciendo, oculta el icono
+                playIcon.classList.add('opacity-0');
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Al hacer clic (o tocar) el overlay, alterna play/pause
+        overlay.addEventListener('click', togglePlayPause);
+
+        // Cuando el video se pausa, actualiza la UI
+        video.addEventListener('pause', updateUI);
+
+        // Cuando el video se reproduce, actualiza la UI
+        video.addEventListener('play', updateUI);
+
+        // Intento inicial de reproducir (para manejar el autoplay)
+        // 'autoplay' a veces es bloqueado y requiere 'play()' explícito
+        video.play().then(() => {
+            // El Autoplay funcionó
+            updateUI();
+        }).catch(error => {
+            // El Autoplay fue bloqueado.
+            // El video está pausado, así que mostramos el ícono de play
+            // para que el usuario pueda iniciarlo manualmente.
+            console.warn("Autoplay bloqueado. Se requiere interacción del usuario.", error);
+            updateUI();
+        });
+
+    </script>
+</body>
+</html>
